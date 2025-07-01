@@ -1,0 +1,86 @@
+<div class="min-h-screen bg-gray-100 p-8">
+  <h1 class="text-3xl font-bold mb-6 text-center">Admin Panel</h1>
+
+  <h2 class="text-2xl font-semibold mb-4">Account Requests</h2>
+  <table class="min-w-full bg-white rounded-lg shadow-md overflow-hidden">
+    <thead class="bg-gray-200">
+      <tr>
+        <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">
+          ID
+        </th>
+        <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">
+          Email
+        </th>
+        <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">
+          Created At
+        </th>
+        <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">
+          Address
+        </th>
+        <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">
+          Status
+        </th>
+        <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">
+          Rejection Reason
+        </th>
+        <th class="py-3 px-6 text-left text-sm font-medium text-gray-700">
+          Accept or Reject
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let request of accountRequests" class="border-b">
+        <td class="py-3 px-6">{{ request.id }}</td>
+        <td class="py-3 px-6">{{ request.email }}</td>
+        <td class="py-3 px-6">{{ request.createdAt }}</td>
+        <td class="py-3 px-6">{{ request.address }}</td>
+        <td class="py-3 px-6">{{ request.status }}</td>
+        <td class="py-3 px-6">{{ request.rejectionReason }}</td>
+        <td class="py-3 px-6">
+          <!-- Show buttons only if status is 'PENDING' -->
+          <button
+            *ngIf="request.status === 'PENDING'"
+            (click)="acceptRequest(request.id)"
+            class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mr-2"
+          >
+            Accept
+          </button>
+          <button
+            *ngIf="request.status === 'PENDING'"
+            (click)="openRejectModal(request.id)"
+            class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+          >
+            Reject
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- Modal for rejection reason -->
+  <div
+    *ngIf="showRejectModal"
+    class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center"
+  >
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+      <span
+        class="absolute top-4 right-4 text-gray-600 hover:text-gray-800 cursor-pointer"
+        (click)="closeRejectModal()"
+        >&times;</span
+      >
+      <h2 class="text-xl font-bold mb-4">Rejection Reason</h2>
+      <textarea
+        [(ngModel)]="rejectionReason"
+        placeholder="Enter reason for rejection"
+        class="w-full p-2 border border-gray-300 rounded-md mb-4"
+        rows="4"
+      ></textarea>
+      <button
+        (click)="rejectRequest()"
+        class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+      >
+        Submit
+      </button>
+    </div>
+  </div>
+</div>

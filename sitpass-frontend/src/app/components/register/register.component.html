@@ -1,0 +1,78 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+  <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+    <h2 class="text-2xl font-bold underline mb-6 text-center">Registracija</h2>
+    <form #registrationForm="ngForm" class="space-y-4" (ngSubmit)="register()">
+      <!-- Email Field -->
+      <div class="flex flex-col">
+        <label for="email" class="mb-1 text-sm font-medium">Email:</label>
+        <input
+          type="email"
+          id="email"
+          [(ngModel)]="email"
+          name="email"
+          required
+          #emailInput="ngModel"
+          class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <!-- Email Validation Message -->
+        <div
+          *ngIf="emailInput.invalid && emailInput.touched"
+          class="text-red-500 mt-1"
+        >
+          Email je obavezan i mora biti validan.
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="flex flex-col">
+        <label for="password" class="mb-1 text-sm font-medium">Lozinka:</label>
+        <input
+          type="password"
+          id="password"
+          [(ngModel)]="password"
+          name="password"
+          required
+          #passwordInput="ngModel"
+          class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <!-- Password Validation Message -->
+        <div
+          *ngIf="passwordInput.invalid && passwordInput.touched"
+          class="text-red-500 mt-1"
+        >
+          Lozinka je obavezna.
+        </div>
+      </div>
+
+      <!-- Address Field -->
+      <div class="flex flex-col">
+        <label for="address" class="mb-1 text-sm font-medium">Adresa:</label>
+        <input
+          type="text"
+          id="address"
+          [(ngModel)]="address"
+          name="address"
+          required
+          #addressInput="ngModel"
+          class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <!-- Address Validation Message -->
+        <div
+          *ngIf="addressInput.invalid && addressInput.touched"
+          class="text-red-500 mt-1"
+        >
+          Adresa je obavezna.
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="mt-4 w-full bg-blue-600 text-white font-medium py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        [disabled]="registrationForm.invalid"
+      >
+        Registruj se
+      </button>
+    </form>
+  </div>
+</div>

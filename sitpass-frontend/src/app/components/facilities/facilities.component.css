@@ -1,0 +1,7 @@
+.sticky-button {
+  position: sticky;
+  top: 10px;
+  left: 100px;
+  max-height: 240px;
+  border-radius: 20px;
+}

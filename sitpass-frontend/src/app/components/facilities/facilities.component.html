@@ -1,0 +1,148 @@
+<div class="sticky-button">
+  <!-- Dugme je pozicionirano sa 'top-4' -->
+  <button
+    class="bg-gray-800 text-white px-4 py-2 hover:bg-blue-700"
+    (click)="toggleSidebar()"
+  >
+    Filters
+  </button>
+</div>
+<div class="container mx-auto p-4 flex">
+  <!-- Dugme za prikazivanje sidebar-a -->
+
+  <!-- Sidebar: Pretraga i filteri -->
+  <div
+    [ngClass]="{
+      'translate-x-0': isSidebarOpen,
+      '-translate-x-full': !isSidebarOpen
+    }"
+    class="fixed inset-y-0 left-0 w-64 bg-white p-4 transition-transform transform -translate-x-full shadow-lg z-20"
+  >
+    <h2 class="text-2xl font-bold mb-4">Search and Filters</h2>
+    <form (ngSubmit)="onSearch()" class="flex flex-col space-y-2">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        name="search"
+        placeholder="Search facilities..."
+        class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <input
+        type="text"
+        [(ngModel)]="filterCriteria.city"
+        name="city"
+        placeholder="Filter by city"
+        class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <input
+        type="text"
+        [(ngModel)]="filterCriteria.discipline"
+        name="discipline"
+        placeholder="Filter by discipline"
+        class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <input
+        type="number"
+        [(ngModel)]="filterCriteria.minRating"
+        name="minRating"
+        placeholder="Min rating"
+        class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <input
+        type="number"
+        [(ngModel)]="filterCriteria.maxRating"
+        name="maxRating"
+        placeholder="Max rating"
+        class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <select
+        [(ngModel)]="filterCriteria.workDay"
+        name="workDay"
+        class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        <option value="">Select workday</option>
+        <option value="monday">Monday</option>
+        <option value="tuesday">Tuesday</option>
+        <option value="wednesday">Wednesday</option>
+        <option value="thursday">Thursday</option>
+        <option value="friday">Friday</option>
+        <option value="saturday">Saturday</option>
+        <option value="sunday">Sunday</option>
+      </select>
+      <button
+        type="submit"
+        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+      >
+        Search
+      </button>
+    </form>
+    <button
+      class="mt-4 w-full bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300"
+      (click)="toggleSidebar()"
+    >
+      Close
+    </button>
+  </div>
+
+  <!-- Desna strana: Kartice -->
+  <div class="w-full">
+    <div
+      class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-4"
+    >
+      <div
+        *ngFor="let facility of filteredFacilities"
+        class="bg-white p-4 rounded-lg shadow-md text-center w-full mx-auto"
+      >
+        <img
+          src="https://cdn.discordapp.com/attachments/1273259880773320708/1279845825945796768/DALLE_2024-09-01_18.50.12_-_A_modern_gym_interior_featuring_various_fitness_equipment_such_as_treadmills_dumbbells_weightlifting_benches_and_exercise_bikes._The_gym_is_brightl.webp?ex=66dbdb8f&is=66da8a0f&hm=fc2b3b962ef6f763e5d9ed1fc85633aa2ee3aa5a1536c96e6d0c3dcd4b2760ef&"
+          alt="{{ facility.name }}"
+          class="w-full h-32 object-cover rounded-md mb-4"
+        />
+        <h2 [routerLink]="['/gym', facility.id]" class="text-xl font-bold mb-4">
+          {{ facility.name }}
+        </h2>
+        <p class="text-gray-600 mb-2">
+          <strong>Description:</strong> {{ facility.description }}
+        </p>
+        <p class="text-gray-600 mb-2">
+          <strong>Address:</strong> {{ facility.address }}
+        </p>
+        <p class="text-gray-600 mb-2">
+          <strong>City:</strong> {{ facility.city }}
+        </p>
+        <p class="text-gray-600 mb-2">
+          <strong>Rating:</strong> {{ facility.totalRating }}
+        </p>
+
+        <!-- Disciplines -->
+        <div class="flex flex-col items-center">
+          <h3 class="text-lg font-bold mb-2">Disciplines</h3>
+          <ul class="w-full">
+            <li
+              *ngFor="let discipline of facility.disciplines"
+              class="flex justify-center items-center border-b border-gray-300 py-2"
+            >
+              <span class="font-medium">{{ discipline.name }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Workdays -->
+        <div class="flex flex-col items-center mt-4">
+          <h3 class="text-lg font-bold mb-2">Workdays</h3>
+          <ul class="w-full">
+            <li
+              *ngFor="let workDay of facility.workDays"
+              class="flex justify-between items-center border-b border-gray-300 py-2"
+            >
+              <span class="font-medium">{{ workDay.day }}</span>
+              <span class="text-gray-600">
+                {{ workDay.startTime }} - {{ workDay.endTime }}
+              </span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

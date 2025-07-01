@@ -1,0 +1,266 @@
+<div class="container mx-auto p-4">
+  <div class="bg-white p-8 rounded-lg shadow-md">
+    <!-- Slika i osnovne informacije o teretani -->
+    <img
+      src="https://cdn.discordapp.com/attachments/1273259880773320708/1279845825945796768/DALLE_2024-09-01_18.50.12_-_A_modern_gym_interior_featuring_various_fitness_equipment_such_as_treadmills_dumbbells_weightlifting_benches_and_exercise_bikes._The_gym_is_brightl.webp?ex=66dbdb8f&is=66da8a0f&hm=fc2b3b962ef6f763e5d9ed1fc85633aa2ee3aa5a1536c96e6d0c3dcd4b2760ef&"
+      alt="{{ facility?.name }}"
+      class="w-full h-64 object-cover rounded-md mb-4"
+    />
+    <h2 class="text-3xl font-bold mb-4">{{ facility?.name }}</h2>
+    <p class="text-gray-600 mb-2">
+      <strong>Description:</strong> {{ facility?.description }}
+    </p>
+    <p class="text-gray-600 mb-2">
+      <strong>Address:</strong> {{ facility?.address }}
+    </p>
+    <p class="text-gray-600 mb-2">
+      <strong>City:</strong> {{ facility?.city }}
+    </p>
+    <p class="text-gray-600 mb-2">
+      <strong>Rating:</strong> {{ facility?.totalRating }}
+    </p>
+
+    <!-- Dugmad za otvaranje sekcija -->
+    <div class="mt-6 flex justify-center space-x-4">
+      <button
+        class="text-gray-700 bg-gray-200 px-4 py-2 rounded-md cursor-pointer hover:bg-gray-300 transition w-48"
+        (click)="toggleSection('disciplines')"
+      >
+        {{
+          activeSection === "disciplines"
+            ? "Hide Disciplines"
+            : "Show Disciplines"
+        }}
+      </button>
+      <button
+        class="text-gray-700 bg-gray-200 px-4 py-2 rounded-md cursor-pointer hover:bg-gray-300 transition w-48"
+        (click)="toggleSection('workdays')"
+      >
+        {{ activeSection === "workdays" ? "Hide Workdays" : "Show Workdays" }}
+      </button>
+      <button
+        class="text-gray-700 bg-gray-200 px-4 py-2 rounded-md cursor-pointer hover:bg-gray-300 transition w-48"
+        (click)="toggleSection('reviews')"
+      >
+        {{ activeSection === "reviews" ? "Hide Reviews" : "Show Reviews" }}
+      </button>
+      <button
+        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition w-48"
+        (click)="openReservationModal()"
+      >
+        Reserve excercise
+      </button>
+    </div>
+
+    <!-- Reservation Modal -->
+    <div
+      *ngIf="showReservationModal"
+      class="fixed inset-0 flex items-center justify-center z-50"
+    >
+      <div class="bg-white p-6 rounded shadow-md w-96">
+        <h2 class="text-2xl font-bold mb-4">Reserve Exercise</h2>
+
+        <!-- Date and Time Fields -->
+        <div class="mb-4">
+          <label class="block text-gray-700">Start Date and Time</label>
+          <input
+            type="datetime-local"
+            [(ngModel)]="reservationStart"
+            class="w-full border border-gray-300 rounded p-2"
+          />
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">End Date and Time</label>
+          <input
+            type="datetime-local"
+            [(ngModel)]="reservationEnd"
+            class="w-full border border-gray-300 rounded p-2"
+          />
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-end">
+          <button
+            (click)="submitReservation()"
+            class="bg-blue-600 text-white px-4 py-2 rounded mr-2"
+          >
+            Reserve
+          </button>
+          <button
+            (click)="closeReservationModal()"
+            class="bg-gray-600 text-white px-4 py-2 rounded"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prošireni sadržaj za Disciplines -->
+    <div *ngIf="activeSection === 'disciplines'" class="mt-4 text-center">
+      <h3 class="text-2xl font-bold mb-2 text-gray-800">Disciplines</h3>
+      <ul class="list-none pl-0 text-gray-600">
+        <li
+          *ngFor="let discipline of facility?.disciplines"
+          class="mb-2 border-b border-gray-300 pb-2"
+        >
+          {{ discipline.name }}
+        </li>
+      </ul>
+    </div>
+
+    <!-- Prošireni sadržaj za Workdays -->
+    <div *ngIf="activeSection === 'workdays'" class="mt-4 text-center">
+      <h3 class="text-2xl font-bold mb-2 text-gray-800">Workdays</h3>
+      <ul class="list-none pl-0 text-gray-600">
+        <li
+          *ngFor="let workDay of facility?.workDays"
+          class="mb-2 border-b border-gray-300 pb-2"
+        >
+          {{ workDay.day }}: {{ workDay.startTime }} - {{ workDay.endTime }}
+        </li>
+      </ul>
+    </div>
+
+    <!-- Prošireni sadržaj za Reviews -->
+    <div *ngIf="activeSection === 'reviews'" class="mt-4 text-center relative">
+      <h3 class="text-2xl font-bold mb-2 text-gray-800">Reviews</h3>
+      <button
+        class="absolute top-0 right-0 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        (click)="openModal()"
+      >
+        Leave your review
+      </button>
+
+      <div
+        *ngIf="showModal"
+        class="fixed inset-0 flex items-center justify-center z-50"
+      >
+        <div class="bg-white p-6 rounded shadow-md w-96">
+          <h2 class="text-2xl font-bold mb-4">Add Review</h2>
+
+          <!-- Polja za ocene -->
+          <div class="mb-4">
+            <label class="block text-gray-700">Equipment Rating</label>
+            <input
+              type="number"
+              [(ngModel)]="newRate.equipment"
+              class="w-full border border-gray-300 rounded p-2"
+              min="0"
+              max="10"
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700">Staff Rating</label>
+            <input
+              type="number"
+              [(ngModel)]="newRate.staff"
+              class="w-full border border-gray-300 rounded p-2"
+              min="0"
+              max="10"
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700">Hygiene Rating</label>
+            <input
+              type="number"
+              [(ngModel)]="newRate.hygiene"
+              class="w-full border border-gray-300 rounded p-2"
+              min="0"
+              max="10"
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-gray-700">Space Rating</label>
+            <input
+              type="number"
+              [(ngModel)]="newRate.space"
+              class="w-full border border-gray-300 rounded p-2"
+              min="0"
+              max="10"
+            />
+          </div>
+
+          <!-- Polje za unos komentara -->
+          <div class="mb-4">
+            <label class="block text-gray-700">Comment</label>
+            <textarea
+              [(ngModel)]="commentText"
+              class="w-full border border-gray-300 rounded p-2"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <!-- Dugmad za akcije -->
+          <div class="flex justify-end">
+            <button
+              (click)="submitReview()"
+              class="bg-blue-600 text-white px-4 py-2 rounded mr-2"
+            >
+              Submit
+            </button>
+            <button
+              (click)="closeModal()"
+              class="bg-gray-600 text-white px-4 py-2 rounded"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="reviews.length > 0" class="mt-4 text-center">
+        <ul class="list-none">
+          <li *ngFor="let review of reviews" class="mb-4">
+            <div class="border-b border-gray-300 pb-2 mb-2">
+              <p class="text-gray-600">
+                <strong>User:</strong> {{ review.user?.name }}
+                {{ review.user?.surname }}
+              </p>
+              <p class="text-gray-600">
+                <strong>Date:</strong> {{ review.createdAt | date : "short" }}
+              </p>
+              <div class="flex justify-center space-x-4">
+                <p class="text-gray-600">
+                  <strong>Equipment Rating:</strong>
+                  {{ review.rates?.equipment }}
+                </p>
+                <p class="text-gray-600">
+                  <strong>Staff Rating:</strong> {{ review.rates?.staff }}
+                </p>
+                <p class="text-gray-600">
+                  <strong>Hygiene Rating:</strong> {{ review.rates?.hygiene }}
+                </p>
+                <p class="text-gray-600">
+                  <strong>Space Rating:</strong> {{ review.rates?.space }}
+                </p>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- No Reviews Message -->
+      <div *ngIf="reviews.length === 0" class="mt-4 text-center">
+        <p class="text-gray-600">There are no reviews yet.</p>
+      </div>
+    </div>
+
+    <!-- Buttons for Edit and Delete -->
+
+    <button
+      *ngIf="isAdmin()"
+      [routerLink]="['/editFacility', facility?.id]"
+      class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+    >
+      Edit Facility
+    </button>
+    <button
+      *ngIf="isAdmin()"
+      (click)="deleteFacility()"
+      class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+    >
+      Delete Facility
+    </button>
+  </div>
+</div>
