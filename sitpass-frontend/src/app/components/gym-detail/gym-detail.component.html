@@ -1,266 +1,201 @@
-<div class="container mx-auto p-4">
-  <div class="bg-white p-8 rounded-lg shadow-md">
-    <!-- Slika i osnovne informacije o teretani -->
+<div class="space-y-4" *ngIf="facility; else loadingBlock">
+  <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
     <img
       [src]="getFacilityImageUrl()"
-      alt="{{ facility?.name }}"
-      class="w-full h-64 object-cover rounded-md mb-4"
+      alt="{{ facility.name }}"
+      class="h-64 w-full object-cover md:h-80"
     />
-    <h2 class="text-3xl font-bold mb-4">{{ facility?.name }}</h2>
-    <p class="text-gray-600 mb-2">
-      <strong>Description:</strong> {{ facility?.description }}
-    </p>
-    <p class="text-gray-600 mb-2">
-      <strong>Address:</strong> {{ facility?.address }}
-    </p>
-    <p class="text-gray-600 mb-2">
-      <strong>City:</strong> {{ facility?.city }}
-    </p>
-    <p class="text-gray-600 mb-2">
-      <strong>Rating:</strong> {{ facility?.totalRating }}
-    </p>
-
-    <!-- Dugmad za otvaranje sekcija -->
-    <div class="mt-6 flex justify-center space-x-4">
-      <button
-        class="text-gray-700 bg-gray-200 px-4 py-2 rounded-md cursor-pointer hover:bg-gray-300 transition w-48"
-        (click)="toggleSection('disciplines')"
-      >
-        {{
-          activeSection === "disciplines"
-            ? "Hide Disciplines"
-            : "Show Disciplines"
-        }}
-      </button>
-      <button
-        class="text-gray-700 bg-gray-200 px-4 py-2 rounded-md cursor-pointer hover:bg-gray-300 transition w-48"
-        (click)="toggleSection('workdays')"
-      >
-        {{ activeSection === "workdays" ? "Hide Workdays" : "Show Workdays" }}
-      </button>
-      <button
-        class="text-gray-700 bg-gray-200 px-4 py-2 rounded-md cursor-pointer hover:bg-gray-300 transition w-48"
-        (click)="toggleSection('reviews')"
-      >
-        {{ activeSection === "reviews" ? "Hide Reviews" : "Show Reviews" }}
-      </button>
-      <button
-        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition w-48"
-        (click)="openReservationModal()"
-      >
-        Reserve excercise
-      </button>
-    </div>
-
-    <!-- Reservation Modal -->
-    <div
-      *ngIf="showReservationModal"
-      class="fixed inset-0 flex items-center justify-center z-50"
-    >
-      <div class="bg-white p-6 rounded shadow-md w-96">
-        <h2 class="text-2xl font-bold mb-4">Reserve Exercise</h2>
-
-        <!-- Date and Time Fields -->
-        <div class="mb-4">
-          <label class="block text-gray-700">Start Date and Time</label>
-          <input
-            type="datetime-local"
-            [(ngModel)]="reservationStart"
-            class="w-full border border-gray-300 rounded p-2"
-          />
+    <div class="space-y-3 p-5">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 class="text-2xl font-semibold text-slate-900 md:text-3xl">{{ facility.name }}</h1>
+          <p class="mt-1 text-sm text-slate-600">{{ facility.description }}</p>
         </div>
-        <div class="mb-4">
-          <label class="block text-gray-700">End Date and Time</label>
-          <input
-            type="datetime-local"
-            [(ngModel)]="reservationEnd"
-            class="w-full border border-gray-300 rounded p-2"
-          />
-        </div>
+        <span class="rounded-full bg-cyan-100 px-3 py-1 text-sm font-medium text-cyan-700">
+          Ocena: {{ facility.totalRating }}
+        </span>
+      </div>
 
-        <!-- Action Buttons -->
-        <div class="flex justify-end">
-          <button
-            (click)="submitReservation()"
-            class="bg-blue-600 text-white px-4 py-2 rounded mr-2"
-          >
-            Reserve
-          </button>
-          <button
-            (click)="closeReservationModal()"
-            class="bg-gray-600 text-white px-4 py-2 rounded"
-          >
-            Cancel
-          </button>
-        </div>
+      <div class="grid gap-2 text-sm text-slate-700 md:grid-cols-2">
+        <p><strong>Adresa:</strong> {{ facility.address }}</p>
+        <p><strong>Grad:</strong> {{ facility.city }}</p>
+      </div>
+
+      <div class="flex flex-wrap gap-2 pt-1">
+        <button [class]="getSectionButtonClass('disciplines')" (click)="toggleSection('disciplines')">
+          Discipline
+        </button>
+        <button [class]="getSectionButtonClass('workdays')" (click)="toggleSection('workdays')">
+          Radno vreme
+        </button>
+        <button [class]="getSectionButtonClass('reviews')" (click)="toggleSection('reviews')">
+          Recenzije
+        </button>
+        <button
+          class="rounded-md border border-indigo-200 bg-indigo-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-indigo-500"
+          (click)="openReservationModal()"
+        >
+          Rezervisi termin
+        </button>
+        <button
+          *ngIf="isAdmin()"
+          [routerLink]="['/editFacility', facility.id]"
+          class="rounded-md border border-blue-200 bg-blue-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-blue-500"
+        >
+          Izmeni objekat
+        </button>
+        <button
+          *ngIf="isAdmin()"
+          (click)="deleteFacility()"
+          class="rounded-md border border-rose-200 bg-rose-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-rose-500"
+        >
+          Obrisi objekat
+        </button>
       </div>
     </div>
+  </section>
 
-    <!-- Prošireni sadržaj za Disciplines -->
-    <div *ngIf="activeSection === 'disciplines'" class="mt-4 text-center">
-      <h3 class="text-2xl font-bold mb-2 text-gray-800">Disciplines</h3>
-      <ul class="list-none pl-0 text-gray-600">
-        <li
-          *ngFor="let discipline of facility?.disciplines"
-          class="mb-2 border-b border-gray-300 pb-2"
-        >
-          {{ discipline.name }}
-        </li>
-      </ul>
+  <section *ngIf="activeSection === 'disciplines'" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <h2 class="mb-3 text-lg font-semibold text-slate-800">Discipline</h2>
+    <ul class="grid gap-2 md:grid-cols-2">
+      <li
+        *ngFor="let discipline of facility?.disciplines"
+        class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700"
+      >
+        {{ discipline.name }}
+      </li>
+    </ul>
+  </section>
+
+  <section *ngIf="activeSection === 'workdays'" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <h2 class="mb-3 text-lg font-semibold text-slate-800">Radno vreme</h2>
+    <div class="space-y-2">
+      <div
+        *ngFor="let workDay of facility?.workDays"
+        class="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700"
+      >
+        <span class="font-medium">{{ workDay.day }}</span>
+        <span>{{ workDay.startTime }} - {{ workDay.endTime }}</span>
+      </div>
     </div>
+  </section>
 
-    <!-- Prošireni sadržaj za Workdays -->
-    <div *ngIf="activeSection === 'workdays'" class="mt-4 text-center">
-      <h3 class="text-2xl font-bold mb-2 text-gray-800">Workdays</h3>
-      <ul class="list-none pl-0 text-gray-600">
-        <li
-          *ngFor="let workDay of facility?.workDays"
-          class="mb-2 border-b border-gray-300 pb-2"
-        >
-          {{ workDay.day }}: {{ workDay.startTime }} - {{ workDay.endTime }}
-        </li>
-      </ul>
-    </div>
-
-    <!-- Prošireni sadržaj za Reviews -->
-    <div *ngIf="activeSection === 'reviews'" class="mt-4 text-center relative">
-      <h3 class="text-2xl font-bold mb-2 text-gray-800">Reviews</h3>
+  <section *ngIf="activeSection === 'reviews'" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div class="mb-3 flex items-center justify-between gap-2">
+      <h2 class="text-lg font-semibold text-slate-800">Recenzije</h2>
       <button
-        class="absolute top-0 right-0 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        class="rounded-md bg-cyan-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-cyan-500"
         (click)="openModal()"
       >
-        Leave your review
+        Ostavi recenziju
       </button>
-
-      <div
-        *ngIf="showModal"
-        class="fixed inset-0 flex items-center justify-center z-50"
-      >
-        <div class="bg-white p-6 rounded shadow-md w-96">
-          <h2 class="text-2xl font-bold mb-4">Add Review</h2>
-
-          <!-- Polja za ocene -->
-          <div class="mb-4">
-            <label class="block text-gray-700">Equipment Rating</label>
-            <input
-              type="number"
-              [(ngModel)]="newRate.equipment"
-              class="w-full border border-gray-300 rounded p-2"
-              min="0"
-              max="10"
-            />
-          </div>
-          <div class="mb-4">
-            <label class="block text-gray-700">Staff Rating</label>
-            <input
-              type="number"
-              [(ngModel)]="newRate.staff"
-              class="w-full border border-gray-300 rounded p-2"
-              min="0"
-              max="10"
-            />
-          </div>
-          <div class="mb-4">
-            <label class="block text-gray-700">Hygiene Rating</label>
-            <input
-              type="number"
-              [(ngModel)]="newRate.hygiene"
-              class="w-full border border-gray-300 rounded p-2"
-              min="0"
-              max="10"
-            />
-          </div>
-          <div class="mb-4">
-            <label class="block text-gray-700">Space Rating</label>
-            <input
-              type="number"
-              [(ngModel)]="newRate.space"
-              class="w-full border border-gray-300 rounded p-2"
-              min="0"
-              max="10"
-            />
-          </div>
-
-          <!-- Polje za unos komentara -->
-          <div class="mb-4">
-            <label class="block text-gray-700">Comment</label>
-            <textarea
-              [(ngModel)]="commentText"
-              class="w-full border border-gray-300 rounded p-2"
-              rows="3"
-            ></textarea>
-          </div>
-
-          <!-- Dugmad za akcije -->
-          <div class="flex justify-end">
-            <button
-              (click)="submitReview()"
-              class="bg-blue-600 text-white px-4 py-2 rounded mr-2"
-            >
-              Submit
-            </button>
-            <button
-              (click)="closeModal()"
-              class="bg-gray-600 text-white px-4 py-2 rounded"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div *ngIf="reviews.length > 0" class="mt-4 text-center">
-        <ul class="list-none">
-          <li *ngFor="let review of reviews" class="mb-4">
-            <div class="border-b border-gray-300 pb-2 mb-2">
-              <p class="text-gray-600">
-                <strong>User:</strong> {{ review.user?.name }}
-                {{ review.user?.surname }}
-              </p>
-              <p class="text-gray-600">
-                <strong>Date:</strong> {{ review.createdAt | date : "short" }}
-              </p>
-              <div class="flex justify-center space-x-4">
-                <p class="text-gray-600">
-                  <strong>Equipment Rating:</strong>
-                  {{ review.rates?.equipment }}
-                </p>
-                <p class="text-gray-600">
-                  <strong>Staff Rating:</strong> {{ review.rates?.staff }}
-                </p>
-                <p class="text-gray-600">
-                  <strong>Hygiene Rating:</strong> {{ review.rates?.hygiene }}
-                </p>
-                <p class="text-gray-600">
-                  <strong>Space Rating:</strong> {{ review.rates?.space }}
-                </p>
-              </div>
-            </div>
-          </li>
-        </ul>
-      </div>
-
-      <!-- No Reviews Message -->
-      <div *ngIf="reviews.length === 0" class="mt-4 text-center">
-        <p class="text-gray-600">There are no reviews yet.</p>
-      </div>
     </div>
 
-    <!-- Buttons for Edit and Delete -->
+    <div *ngIf="reviews.length > 0" class="space-y-3">
+      <article *ngFor="let review of reviews" class="rounded-xl border border-slate-200 p-3">
+        <div class="mb-2 flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <img [src]="getReviewAvatar(review)" alt="Korisnik" class="h-9 w-9 rounded-full" />
+            <div>
+              <p class="text-sm font-medium text-slate-800">
+                {{ review.user?.name }} {{ review.user?.surname }}
+              </p>
+              <p class="text-xs text-slate-500">{{ review.createdAt | date : "short" }}</p>
+            </div>
+          </div>
+          <span class="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
+            Prosek: {{ getReviewAverage(review) }}
+          </span>
+        </div>
 
-    <button
-      *ngIf="isAdmin()"
-      [routerLink]="['/editFacility', facility?.id]"
-      class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        <div class="grid gap-2 text-xs text-slate-600 md:grid-cols-4">
+          <p><strong>Oprema:</strong> {{ review.rates?.equipment }}</p>
+          <p><strong>Osoblje:</strong> {{ review.rates?.staff }}</p>
+          <p><strong>Higijena:</strong> {{ review.rates?.hygiene }}</p>
+          <p><strong>Prostor:</strong> {{ review.rates?.space }}</p>
+        </div>
+      </article>
+    </div>
+
+    <div
+      *ngIf="reviews.length === 0"
+      class="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-center text-sm text-slate-600"
     >
-      Edit Facility
-    </button>
-    <button
-      *ngIf="isAdmin()"
-      (click)="deleteFacility()"
-      class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-    >
-      Delete Facility
-    </button>
+      <img
+        src="https://images.pexels.com/photos/1229356/pexels-photo-1229356.jpeg?auto=compress&cs=tinysrgb&w=900&h=260&dpr=1"
+        alt="No reviews"
+        class="mb-2 h-24 w-full rounded-lg object-cover"
+      />
+      Trenutno nema recenzija za ovaj objekat.
+    </div>
+  </section>
+</div>
+
+<ng-template #loadingBlock>
+  <div class="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">
+    Ucitavanje detalja objekta...
+  </div>
+</ng-template>
+
+<div *ngIf="showReservationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
+  <div class="w-full max-w-md rounded-xl border border-slate-200 bg-white p-5 shadow-xl">
+    <h3 class="mb-3 text-lg font-semibold text-slate-800">Rezervacija termina</h3>
+    <div class="space-y-3">
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        Pocetak
+        <input type="datetime-local" [(ngModel)]="reservationStart" class="rounded-lg border border-slate-300 p-2" />
+      </label>
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        Kraj
+        <input type="datetime-local" [(ngModel)]="reservationEnd" class="rounded-lg border border-slate-300 p-2" />
+      </label>
+    </div>
+    <div class="mt-4 flex justify-end gap-2">
+      <button (click)="closeReservationModal()" class="rounded-md bg-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-300">
+        Odustani
+      </button>
+      <button (click)="submitReservation()" class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-500">
+        Potvrdi
+      </button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4">
+  <div class="w-full max-w-lg rounded-xl border border-slate-200 bg-white p-5 shadow-xl">
+    <h3 class="mb-3 text-lg font-semibold text-slate-800">Nova recenzija</h3>
+
+    <div class="grid gap-3 md:grid-cols-2">
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        Oprema (0-10)
+        <input type="number" [(ngModel)]="newRate.equipment" min="0" max="10" class="rounded-lg border border-slate-300 p-2" />
+      </label>
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        Osoblje (0-10)
+        <input type="number" [(ngModel)]="newRate.staff" min="0" max="10" class="rounded-lg border border-slate-300 p-2" />
+      </label>
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        Higijena (0-10)
+        <input type="number" [(ngModel)]="newRate.hygiene" min="0" max="10" class="rounded-lg border border-slate-300 p-2" />
+      </label>
+      <label class="flex flex-col gap-1 text-sm text-slate-700">
+        Prostor (0-10)
+        <input type="number" [(ngModel)]="newRate.space" min="0" max="10" class="rounded-lg border border-slate-300 p-2" />
+      </label>
+    </div>
+
+    <label class="mt-3 flex flex-col gap-1 text-sm text-slate-700">
+      Komentar
+      <textarea [(ngModel)]="commentText" rows="3" class="rounded-lg border border-slate-300 p-2"></textarea>
+    </label>
+
+    <div class="mt-4 flex justify-end gap-2">
+      <button (click)="closeModal()" class="rounded-md bg-slate-200 px-3 py-2 text-sm text-slate-700 hover:bg-slate-300">
+        Odustani
+      </button>
+      <button (click)="submitReview()" class="rounded-md bg-cyan-600 px-3 py-2 text-sm font-medium text-white hover:bg-cyan-500">
+        Objavi recenziju
+      </button>
+    </div>
   </div>
 </div>

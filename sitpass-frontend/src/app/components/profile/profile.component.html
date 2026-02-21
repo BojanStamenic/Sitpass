@@ -1,202 +1,92 @@
-<div class="min-h-screen flex items-start justify-center bg-gray-100">
-  <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md mr-4">
-    <!-- Generička slika korisnika -->
-    <div class="flex flex-col items-center mb-6">
-      <img
-        src="https://cdn.discordapp.com/attachments/1279197831554400328/1279208484151496744/DALLE_2024-08-31_00.37.20_-_A_generic_user_profile_picture_featuring_a_silhouette_of_a_person._The_image_should_be_simple_with_a_circular_frame_and_a_plain_light_grey_backgroun.webp?ex=66db843d&is=66da32bd&hm=9797287f853f8ace35ac307d83cac2fbc3c5407cdeacba064ad39ef8a207b629&"
-        alt="Korisnički profil"
-        class="w-24 h-24 rounded-full mb-4"
-      />
-      <h2 class="text-2xl font-bold mb-4">Profil korisnika</h2>
+<div class="grid gap-4 lg:grid-cols-3">
+  <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
+    <div *ngIf="isLoading" class="text-sm text-slate-600">Ucitavanje profila...</div>
+    <div *ngIf="!isLoading && errorMessage" class="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+      {{ errorMessage }}
     </div>
 
-    <form (ngSubmit)="onUpdateProfile()" class="space-y-4">
-      <div *ngIf="user">
-        <!-- Email polje -->
-        <div class="flex flex-col">
-          <label for="email" class="mb-1 text-sm font-medium">Email:</label>
-          <input
-            type="email"
-            id="email"
-            [(ngModel)]="user.email"
-            name="email"
-            required
-            readonly
-            class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+    <div *ngIf="!isLoading && user" class="space-y-4">
+      <div class="flex items-center gap-4 rounded-xl bg-slate-900 p-4 text-slate-100">
+        <img [src]="getProfileImageUrl()" alt="Profil" class="h-16 w-16 rounded-full border border-cyan-300" />
+        <div>
+          <h1 class="text-xl font-semibold">Moj profil</h1>
+          <p class="text-sm text-slate-300">{{ user.email }}</p>
+        </div>
+      </div>
+
+      <form (ngSubmit)="onUpdateProfile()" class="grid gap-3 md:grid-cols-2">
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          Ime
+          <input type="text" [(ngModel)]="user.name" name="name" required class="rounded-lg border border-slate-300 px-3 py-2" />
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          Prezime
+          <input type="text" [(ngModel)]="user.surname" name="surname" required class="rounded-lg border border-slate-300 px-3 py-2" />
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          Grad
+          <input type="text" [(ngModel)]="user.city" name="city" required class="rounded-lg border border-slate-300 px-3 py-2" />
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          Postanski broj
+          <input type="text" [(ngModel)]="user.zipCode" name="zipCode" required class="rounded-lg border border-slate-300 px-3 py-2" />
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700 md:col-span-2">
+          Adresa
+          <input type="text" [(ngModel)]="user.address" name="address" required class="rounded-lg border border-slate-300 px-3 py-2" />
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          Datum rodjenja
+          <input type="date" [(ngModel)]="user.birthday" name="birthday" required class="rounded-lg border border-slate-300 px-3 py-2" />
+        </label>
+
+        <label class="flex flex-col gap-1 text-sm text-slate-700">
+          Broj telefona
+          <input type="text" [(ngModel)]="user.phoneNumber" name="phoneNumber" required class="rounded-lg border border-slate-300 px-3 py-2" />
+        </label>
+
+        <div class="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-3 md:col-span-2">
+          <h2 class="mb-2 text-sm font-semibold text-slate-700">Promena lozinke (opciono)</h2>
+          <div class="grid gap-3 md:grid-cols-3">
+            <input type="password" [(ngModel)]="oldPassword" name="oldPassword" placeholder="Stara lozinka" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <input type="password" [(ngModel)]="newPassword" name="newPassword" placeholder="Nova lozinka" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <input type="password" [(ngModel)]="confirmNewPassword" name="confirmNewPassword" placeholder="Potvrdi novu" class="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+          </div>
         </div>
 
-        <!-- Name polje -->
-        <div class="flex flex-col">
-          <label for="name" class="mb-1 text-sm font-medium">Ime:</label>
-          <input
-            type="text"
-            id="name"
-            [(ngModel)]="user.name"
-            name="name"
-            required
-            class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+        <div *ngIf="successMessage" class="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700 md:col-span-2">
+          {{ successMessage }}
+        </div>
+        <div *ngIf="!successMessage && errorMessage" class="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700 md:col-span-2">
+          {{ errorMessage }}
         </div>
 
-        <!-- Surname polje -->
-        <div class="flex flex-col">
-          <label for="surname" class="mb-1 text-sm font-medium">Prezime:</label>
-          <input
-            type="text"
-            id="surname"
-            [(ngModel)]="user.surname"
-            name="surname"
-            required
-            class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <!-- City polje -->
-        <div class="flex flex-col">
-          <label for="city" class="mb-1 text-sm font-medium">City:</label>
-          <input
-            type="text"
-            id="city"
-            [(ngModel)]="user.city"
-            name="city"
-            required
-            class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <!-- Address polje -->
-        <div class="flex flex-col">
-          <label for="address" class="mb-1 text-sm font-medium">Adresa:</label>
-          <input
-            type="text"
-            id="address"
-            [(ngModel)]="user.address"
-            name="address"
-            required
-            class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <!-- Birthdate polje -->
-        <div class="flex flex-col">
-          <label for="birthdate" class="mb-1 text-sm font-medium"
-            >Datum rođenja:</label
-          >
-          <input
-            type="date"
-            id="birthdate"
-            [(ngModel)]="user.birthday"
-            name="birthdate"
-            required
-            class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <!-- Phone Number polje -->
-        <div class="flex flex-col">
-          <label for="phoneNumber" class="mb-1 text-sm font-medium"
-            >Broj telefona:</label
-          >
-          <input
-            type="text"
-            id="phoneNumber"
-            [(ngModel)]="user.phoneNumber"
-            name="phoneNumber"
-            required
-            class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <!-- Zip Code polje -->
-        <div class="flex flex-col">
-          <label for="zipCode" class="mb-1 text-sm font-medium"
-            >Poštanski broj:</label
-          >
-          <input
-            type="text"
-            id="zipCode"
-            [(ngModel)]="user.zipCode"
-            name="zipCode"
-            required
-            class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <!-- Old Password polje -->
-        <div class="flex flex-col">
-          <label for="oldPassword" class="mb-1 text-sm font-medium"
-            >Stara lozinka:</label
-          >
-          <input
-            type="password"
-            id="oldPassword"
-            [(ngModel)]="oldPassword"
-            name="oldPassword"
-            class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <!-- New Password polje -->
-        <div class="flex flex-col">
-          <label for="newPassword" class="mb-1 text-sm font-medium"
-            >Nova lozinka:</label
-          >
-          <input
-            type="password"
-            id="newPassword"
-            [(ngModel)]="newPassword"
-            name="newPassword"
-            class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <!-- Confirm New Password polje -->
-        <div class="flex flex-col">
-          <label for="confirmNewPassword" class="mb-1 text-sm font-medium"
-            >Potvrdi novu lozinku:</label
-          >
-          <input
-            type="password"
-            id="confirmNewPassword"
-            [(ngModel)]="confirmNewPassword"
-            name="confirmNewPassword"
-            class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <button
-          type="submit"
-          [disabled]="isUpdating"
-          class="mt-4 w-full bg-blue-600 text-white font-medium py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-        >
-          Ažuriraj profil
+        <button type="submit" [disabled]="isUpdating" class="mt-1 rounded-lg bg-cyan-600 px-4 py-2.5 font-medium text-white hover:bg-cyan-500 disabled:opacity-60 md:col-span-2">
+          {{ isUpdating ? 'Cuvanje...' : 'Sacuvaj izmene' }}
         </button>
-      </div>
-      <div *ngIf="!user" class="text-center">
-        <p>Učitavanje korisničkih podataka...</p>
-      </div>
-    </form>
-  </div>
-  <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-    <h2 class="text-2xl font-bold mb-4">Termini vežbanja</h2>
-    <ul *ngIf="exercises.length > 0" class="space-y-4">
-      <li *ngFor="let exercise of exercises">
-        <div class="border-b border-gray-300 pb-2">
-          <p class="text-gray-600">
-            <strong>Početak:</strong> {{ exercise.startTime | date : "medium" }}
-          </p>
-          <p class="text-gray-600">
-            <strong>Kraj:</strong> {{ exercise.endTime | date : "medium" }}
-          </p>
-          <p class="text-gray-600">
-            <strong>Lokacija:</strong> {{ exercise.facility.name }}
-          </p>
-        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <h2 class="mb-3 text-lg font-semibold text-slate-800">Zakazani termini</h2>
+
+    <ul *ngIf="exercises.length > 0" class="space-y-3">
+      <li *ngFor="let exercise of exercises" class="rounded-lg border border-slate-200 p-3 text-sm text-slate-700">
+        <p><strong>Objekat:</strong> {{ exercise.facility.name }}</p>
+        <p><strong>Pocetak:</strong> {{ exercise.startTime | date : 'medium' }}</p>
+        <p><strong>Kraj:</strong> {{ exercise.endTime | date : 'medium' }}</p>
       </li>
     </ul>
-    <div *ngIf="exercises.length === 0" class="text-center text-gray-600">
-      <p>Nema zakazanih termina.</p>
+
+    <div *ngIf="exercises.length === 0" class="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-center text-sm text-slate-600">
+      <img src="https://images.pexels.com/photos/3768916/pexels-photo-3768916.jpeg?auto=compress&cs=tinysrgb&w=600&h=220&dpr=1" alt="Nema termina" class="mb-2 h-24 w-full rounded-lg object-cover" />
+      Nemas zakazanih termina.
     </div>
-  </div>
+  </section>
 </div>

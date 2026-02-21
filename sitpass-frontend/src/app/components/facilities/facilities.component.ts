@@ -13,6 +13,14 @@ import { Facility } from '../../model/facility.model';
   standalone: true,
 })
 export class FacilitiesComponent implements OnInit {
+  private readonly fallbackGymImages: string[] = [
+    'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&cs=tinysrgb&w=1200&h=700&dpr=1',
+    'https://images.pexels.com/photos/2261485/pexels-photo-2261485.jpeg?auto=compress&cs=tinysrgb&w=1200&h=700&dpr=1',
+    'https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg?auto=compress&cs=tinysrgb&w=1200&h=700&dpr=1',
+    'https://images.pexels.com/photos/3757376/pexels-photo-3757376.jpeg?auto=compress&cs=tinysrgb&w=1200&h=700&dpr=1',
+    'https://images.pexels.com/photos/414029/pexels-photo-414029.jpeg?auto=compress&cs=tinysrgb&w=1200&h=700&dpr=1',
+  ];
+
   facilities: Facility[] = [];
   filteredFacilities: Facility[] = [];
   searchQuery: string = '';
@@ -31,8 +39,6 @@ export class FacilitiesComponent implements OnInit {
     maxRating: null,
     workDay: '',
   };
-
-  isSidebarOpen: boolean = false;
 
   constructor(private facilityService: FacilityService) {}
 
@@ -131,10 +137,6 @@ export class FacilitiesComponent implements OnInit {
     return filtered;
   }
 
-  toggleSidebar(): void {
-    this.isSidebarOpen = !this.isSidebarOpen;
-  }
-
   clearFilters(): void {
     this.searchQuery = '';
     this.filterCriteria = {
@@ -178,7 +180,8 @@ export class FacilitiesComponent implements OnInit {
         return `http://localhost:8080/SitPass/api/facilities/images/${firstImage.id}`;
       }
     }
-    const seed = facility.id || 1;
-    return `https://picsum.photos/seed/sitpass-${seed}/800/450`;
+    const seed = Number(facility.id || 1);
+    const index = Math.abs(seed) % this.fallbackGymImages.length;
+    return this.fallbackGymImages[index];
   }
 }

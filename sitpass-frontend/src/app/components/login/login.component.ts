@@ -3,7 +3,6 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { UserService } from '../../services/user.service';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -16,7 +15,7 @@ export class LoginComponent {
   email = '';
   password = '';
 
-  constructor(private userService: UserService, private router: Router) {}
+  constructor(private userService: UserService) {}
 
   ngOnInit(): void {
     return;
@@ -48,11 +47,11 @@ export class LoginComponent {
             if (!role) {
               localStorage.removeItem('role');
             }
-            window.location.reload();
+            window.location.assign('/facilities');
           },
           () => {
             localStorage.removeItem('role');
-            window.location.reload();
+            window.location.assign('/facilities');
           }
         );
       },

@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { AccountRequestService } from '../../services/account-request.service'; // Pretpostavljamo da postoji servis za account requests
+import { AccountRequestService } from '../../services/account-request.service';
 import { HttpHeaders } from '@angular/common/http';
-import { FormsModule } from '@angular/forms'; // Importujte FormsModule
+import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -10,13 +10,17 @@ import { RouterModule } from '@angular/router';
   templateUrl: './admin.component.html',
   styleUrls: ['./admin.component.css'],
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule], // Dodajte FormsModule ovde
+  imports: [CommonModule, RouterModule, FormsModule],
 })
 export class AdminComponent implements OnInit {
   accountRequests: any[] = [];
   showRejectModal = false;
   rejectionReason = '';
   currentRequestId: number | null = null;
+  isLoading = false;
+  actionRequestId: number | null = null;
+  successMessage = '';
+  errorMessage = '';
 
   constructor(private accountRequestService: AccountRequestService) {}
 
@@ -25,28 +29,34 @@ export class AdminComponent implements OnInit {
   }
 
   loadAccountRequests() {
+    this.isLoading = true;
     this.accountRequestService.getAllAccountRequests().subscribe(
       (data) => {
         this.accountRequests = data;
-        console.log('Account requests:', this.accountRequests);
+        this.isLoading = false;
       },
-      (error) => {
-        console.error('Error fetching account requests:', error);
+      () => {
+        this.errorMessage = 'Ne mogu da ucitam zahteve.';
+        this.isLoading = false;
       }
     );
   }
 
   acceptRequest(id: number) {
+    this.actionRequestId = id;
+    this.successMessage = '';
+    this.errorMessage = '';
     const headers = this.getAuthHeaders();
+
     this.accountRequestService.acceptRequest(id, headers).subscribe(
-      (success) => {
-        console.log('Request accepted');
-        this.loadAccountRequests(); // Refresh the list
-        window.location.reload(); // Refresh the page
+      () => {
+        this.successMessage = `Zahtev #${id} je prihvacen.`;
+        this.actionRequestId = null;
+        this.loadAccountRequests();
       },
-      (error) => {
-        console.error('Error accepting request:', error);
-        window.location.reload(); // Refresh the page
+      () => {
+        this.errorMessage = `Greska pri prihvatanju zahteva #${id}.`;
+        this.actionRequestId = null;
       }
     );
   }
@@ -63,23 +73,54 @@ export class AdminComponent implements OnInit {
   }
 
   rejectRequest() {
-    if (this.currentRequestId !== null && this.rejectionReason.trim()) {
-      const headers = this.getAuthHeaders();
-      this.accountRequestService
-        .rejectRequest(this.currentRequestId, this.rejectionReason, headers)
-        .subscribe(
-          () => {
-            console.log('Request rejected');
-            this.closeRejectModal();
-            this.loadAccountRequests(); // Refresh the list
-            window.location.reload(); // Refresh the page
-          },
-          (error) => {
-            console.error('Error rejecting request:', error);
-            window.location.reload(); // Refresh the page
-          }
-        );
+    if (this.currentRequestId === null || !this.rejectionReason.trim()) {
+      return;
     }
+
+    const id = this.currentRequestId;
+    this.actionRequestId = id;
+    this.successMessage = '';
+    this.errorMessage = '';
+    const headers = this.getAuthHeaders();
+
+    this.accountRequestService
+      .rejectRequest(id, this.rejectionReason, headers)
+      .subscribe(
+        () => {
+          this.successMessage = `Zahtev #${id} je odbijen.`;
+          this.actionRequestId = null;
+          this.closeRejectModal();
+          this.loadAccountRequests();
+        },
+        () => {
+          this.errorMessage = `Greska pri odbijanju zahteva #${id}.`;
+          this.actionRequestId = null;
+        }
+      );
+  }
+
+  formatDate(value: string): string {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+    return date.toLocaleString('sr-RS');
+  }
+
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'ACCEPTED':
+        return 'bg-emerald-100 text-emerald-700';
+      case 'REJECTED':
+        return 'bg-rose-100 text-rose-700';
+      default:
+        return 'bg-amber-100 text-amber-700';
+    }
+  }
+
+  getAvatarUrl(email: string): string {
+    const safe = encodeURIComponent(email || 'Admin User');
+    return `https://ui-avatars.com/api/?name=${safe}&background=0f172a&color=67e8f9&size=128`;
   }
 
   private getAuthHeaders() {

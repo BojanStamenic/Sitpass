@@ -18,6 +18,13 @@ import { ReviewService } from '../../services/review-service.service';
   imports: [CommonModule, FormsModule, RouterModule],
 })
 export class GymDetailComponent implements OnInit {
+  private readonly fallbackGymImages: string[] = [
+    'https://images.pexels.com/photos/1552242/pexels-photo-1552242.jpeg?auto=compress&cs=tinysrgb&w=1400&h=700&dpr=1',
+    'https://images.pexels.com/photos/2261485/pexels-photo-2261485.jpeg?auto=compress&cs=tinysrgb&w=1400&h=700&dpr=1',
+    'https://images.pexels.com/photos/1954524/pexels-photo-1954524.jpeg?auto=compress&cs=tinysrgb&w=1400&h=700&dpr=1',
+    'https://images.pexels.com/photos/3757376/pexels-photo-3757376.jpeg?auto=compress&cs=tinysrgb&w=1400&h=700&dpr=1',
+    'https://images.pexels.com/photos/414029/pexels-photo-414029.jpeg?auto=compress&cs=tinysrgb&w=1400&h=700&dpr=1',
+  ];
   facility: Facility | undefined;
   activeSection: string | null = 'disciplines';
   showModal: boolean = false;
@@ -244,7 +251,7 @@ export class GymDetailComponent implements OnInit {
 
   getFacilityImageUrl(): string {
     if (!this.facility) {
-      return 'https://picsum.photos/seed/sitpass-default/1200/500';
+      return this.fallbackGymImages[0];
     }
 
     const images: any[] = (this.facility as any).images || [];
@@ -258,7 +265,38 @@ export class GymDetailComponent implements OnInit {
       }
     }
 
-    const seed = this.facility.id || 1;
-    return `https://picsum.photos/seed/sitpass-detail-${seed}/1200/500`;
+    const seed = Number(this.facility.id || 1);
+    const index = Math.abs(seed) % this.fallbackGymImages.length;
+    return this.fallbackGymImages[index];
+  }
+
+  getSectionButtonClass(section: string): string {
+    const base =
+      'rounded-md px-3 py-2 text-sm font-medium transition border';
+    if (this.activeSection === section) {
+      return `${base} border-cyan-500 bg-cyan-600 text-white`;
+    }
+    return `${base} border-slate-200 bg-white text-slate-700 hover:bg-slate-50`;
+  }
+
+  getReviewAverage(review: Review): string {
+    const rate = review.rates;
+    if (!rate) {
+      return '-';
+    }
+    const avg =
+      (Number(rate.equipment || 0) +
+        Number(rate.staff || 0) +
+        Number(rate.hygiene || 0) +
+        Number(rate.space || 0)) /
+      4;
+    return avg.toFixed(1);
+  }
+
+  getReviewAvatar(review: Review): string {
+    const name = review.user?.name || 'SitPass';
+    const surname = review.user?.surname || 'Member';
+    const initials = encodeURIComponent(`${name} ${surname}`);
+    return `https://ui-avatars.com/api/?name=${initials}&background=0f172a&color=67e8f9&size=96`;
   }
 }
