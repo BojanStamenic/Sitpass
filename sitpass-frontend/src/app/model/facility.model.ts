@@ -13,4 +13,6 @@ export interface Facility {
   images: string[];
   disciplines: Discipline[];
   workDays: WorkDay[];
+  pdfObjectKey?: string;
+  pdfFileName?: string;
 }

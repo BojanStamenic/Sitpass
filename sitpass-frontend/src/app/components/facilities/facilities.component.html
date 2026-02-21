@@ -1,66 +1,80 @@
-<div class="sticky-button">
-  <!-- Dugme je pozicionirano sa 'top-4' -->
-  <button
-    class="bg-gray-800 text-white px-4 py-2 hover:bg-blue-700"
-    (click)="toggleSidebar()"
-  >
-    Filters
-  </button>
+<div class="mb-4 flex items-center justify-between rounded-xl bg-slate-900 px-4 py-3 text-slate-100 shadow-md">
+  <div>
+    <h1 class="text-xl font-semibold">Fitness objekti</h1>
+    <p class="text-sm text-slate-300">Pretraga po nazivu, opisu i PDF sadrzaju</p>
+  </div>
+  <div class="flex items-center gap-2">
+    <span class="rounded-md bg-slate-800 px-3 py-2 text-xs text-slate-300">
+      Prikazano: {{ filteredFacilities.length }}
+    </span>
+    <button
+      class="rounded-md bg-cyan-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-cyan-500"
+      (click)="toggleSidebar()"
+    >
+      Filteri
+    </button>
+  </div>
 </div>
-<div class="container mx-auto p-4 flex">
-  <!-- Dugme za prikazivanje sidebar-a -->
 
-  <!-- Sidebar: Pretraga i filteri -->
+<div class="container mx-auto flex gap-4 p-0">
+  <div
+    *ngIf="isSidebarOpen"
+    class="fixed inset-0 z-30 bg-slate-950/40 md:hidden"
+    (click)="toggleSidebar()"
+  ></div>
+
   <div
     [ngClass]="{
       'translate-x-0': isSidebarOpen,
       '-translate-x-full': !isSidebarOpen
     }"
-    class="fixed inset-y-0 left-0 w-64 bg-white p-4 transition-transform transform -translate-x-full shadow-lg z-20"
+    class="fixed inset-y-0 left-0 z-40 w-72 border-r border-slate-200 bg-white p-4 transition-transform md:relative md:translate-x-0"
   >
-    <h2 class="text-2xl font-bold mb-4">Search and Filters</h2>
-    <form (ngSubmit)="onSearch()" class="flex flex-col space-y-2">
+    <h2 class="mb-4 text-lg font-bold text-slate-800">Pretraga i filteri</h2>
+    <form (ngSubmit)="onSearch()" class="flex flex-col space-y-3">
       <input
         type="text"
         [(ngModel)]="searchQuery"
         name="search"
-        placeholder="Search facilities..."
-        class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="Naziv/opis/PDF..."
+        class="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
       />
       <input
         type="text"
         [(ngModel)]="filterCriteria.city"
         name="city"
-        placeholder="Filter by city"
-        class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="Grad"
+        class="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
       />
       <input
         type="text"
         [(ngModel)]="filterCriteria.discipline"
         name="discipline"
-        placeholder="Filter by discipline"
-        class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="Disciplina"
+        class="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
       />
-      <input
-        type="number"
-        [(ngModel)]="filterCriteria.minRating"
-        name="minRating"
-        placeholder="Min rating"
-        class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-      <input
-        type="number"
-        [(ngModel)]="filterCriteria.maxRating"
-        name="maxRating"
-        placeholder="Max rating"
-        class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+      <div class="grid grid-cols-2 gap-2">
+        <input
+          type="number"
+          [(ngModel)]="filterCriteria.minRating"
+          name="minRating"
+          placeholder="Min ocena"
+          class="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+        />
+        <input
+          type="number"
+          [(ngModel)]="filterCriteria.maxRating"
+          name="maxRating"
+          placeholder="Max ocena"
+          class="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+        />
+      </div>
       <select
         [(ngModel)]="filterCriteria.workDay"
         name="workDay"
-        class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
       >
-        <option value="">Select workday</option>
+        <option value="">Dan u nedelji</option>
         <option value="monday">Monday</option>
         <option value="tuesday">Tuesday</option>
         <option value="wednesday">Wednesday</option>
@@ -71,78 +85,79 @@
       </select>
       <button
         type="submit"
-        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        class="rounded-md bg-cyan-600 px-4 py-2 text-white transition hover:bg-cyan-500"
       >
-        Search
+        Primeni
+      </button>
+      <button
+        type="button"
+        class="rounded-md bg-slate-200 px-4 py-2 text-slate-700 transition hover:bg-slate-300"
+        (click)="clearFilters()"
+      >
+        Ocisti
       </button>
     </form>
     <button
-      class="mt-4 w-full bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300"
+      class="mt-4 w-full rounded-md bg-slate-200 px-4 py-2 text-slate-700 transition hover:bg-slate-300 md:hidden"
       (click)="toggleSidebar()"
     >
-      Close
+      Zatvori
     </button>
   </div>
 
-  <!-- Desna strana: Kartice -->
   <div class="w-full">
-    <div
-      class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-4"
-    >
+    <div *ngIf="isLoading" class="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">
+      Ucitavanje objekata...
+    </div>
+    <div *ngIf="!isLoading && errorMessage" class="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+      {{ errorMessage }}
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       <div
         *ngFor="let facility of filteredFacilities"
-        class="bg-white p-4 rounded-lg shadow-md text-center w-full mx-auto"
+        class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
       >
         <img
-          src="https://cdn.discordapp.com/attachments/1273259880773320708/1279845825945796768/DALLE_2024-09-01_18.50.12_-_A_modern_gym_interior_featuring_various_fitness_equipment_such_as_treadmills_dumbbells_weightlifting_benches_and_exercise_bikes._The_gym_is_brightl.webp?ex=66dbdb8f&is=66da8a0f&hm=fc2b3b962ef6f763e5d9ed1fc85633aa2ee3aa5a1536c96e6d0c3dcd4b2760ef&"
+          [src]="getFacilityImageUrl(facility)"
           alt="{{ facility.name }}"
-          class="w-full h-32 object-cover rounded-md mb-4"
+          class="h-44 w-full object-cover"
         />
-        <h2 [routerLink]="['/gym', facility.id]" class="text-xl font-bold mb-4">
-          {{ facility.name }}
-        </h2>
-        <p class="text-gray-600 mb-2">
-          <strong>Description:</strong> {{ facility.description }}
-        </p>
-        <p class="text-gray-600 mb-2">
-          <strong>Address:</strong> {{ facility.address }}
-        </p>
-        <p class="text-gray-600 mb-2">
-          <strong>City:</strong> {{ facility.city }}
-        </p>
-        <p class="text-gray-600 mb-2">
-          <strong>Rating:</strong> {{ facility.totalRating }}
-        </p>
+        <div class="space-y-2 p-4">
+          <h2
+            [routerLink]="['/gym', facility.id]"
+            class="cursor-pointer text-lg font-semibold text-slate-900 hover:text-cyan-600"
+          >
+            {{ facility.name }}
+          </h2>
+          <p class="line-clamp-2 text-sm text-slate-600">{{ facility.description }}</p>
+          <p class="text-sm text-slate-600"><strong>Adresa:</strong> {{ facility.address }}</p>
+          <p class="text-sm text-slate-600"><strong>Grad:</strong> {{ facility.city }}</p>
+          <p class="text-sm text-slate-600"><strong>Ocena:</strong> {{ facility.totalRating }}</p>
 
-        <!-- Disciplines -->
-        <div class="flex flex-col items-center">
-          <h3 class="text-lg font-bold mb-2">Disciplines</h3>
-          <ul class="w-full">
-            <li
-              *ngFor="let discipline of facility.disciplines"
-              class="flex justify-center items-center border-b border-gray-300 py-2"
-            >
-              <span class="font-medium">{{ discipline.name }}</span>
-            </li>
-          </ul>
-        </div>
+          <button
+            class="mb-2 rounded-md bg-blue-600 px-3 py-2 text-sm text-white transition hover:bg-blue-500 disabled:bg-gray-400"
+            [disabled]="!facility.pdfObjectKey"
+            (click)="downloadPdf(facility)"
+          >
+            Download PDF
+          </button>
 
-        <!-- Workdays -->
-        <div class="flex flex-col items-center mt-4">
-          <h3 class="text-lg font-bold mb-2">Workdays</h3>
-          <ul class="w-full">
-            <li
-              *ngFor="let workDay of facility.workDays"
-              class="flex justify-between items-center border-b border-gray-300 py-2"
-            >
-              <span class="font-medium">{{ workDay.day }}</span>
-              <span class="text-gray-600">
-                {{ workDay.startTime }} - {{ workDay.endTime }}
-              </span>
-            </li>
-          </ul>
+          <div>
+            <h3 class="mb-1 text-sm font-bold text-slate-800">Disciplines</h3>
+            <ul class="space-y-1 text-sm text-slate-600">
+              <li *ngFor="let discipline of facility.disciplines">- {{ discipline.name }}</li>
+            </ul>
+          </div>
         </div>
       </div>
+    </div>
+
+    <div
+      *ngIf="!isLoading && !errorMessage && filteredFacilities.length === 0"
+      class="mt-4 rounded-xl border border-slate-200 bg-white p-6 text-center text-slate-600 shadow-sm"
+    >
+      Nema objekata za zadate filtere.
     </div>
   </div>
 </div>

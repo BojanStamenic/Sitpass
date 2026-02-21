@@ -6,16 +6,20 @@ import { Discipline } from '../../model/discipline.model';
 import { WorkDay } from '../../model/workday.model';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-edit-facility',
   templateUrl: './edit-facility.component.html',
   styleUrls: ['./edit-facility.component.css'],
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, RouterModule],
   standalone: true,
 })
 export class EditFacilityComponent implements OnInit {
   facilityId: number = 0;
+  selectedPdfFile: File | null = null;
+  isSubmitting = false;
+  dayOptions = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
   facility: Facility = {
     id: 0,
     name: '',
@@ -79,16 +83,45 @@ export class EditFacilityComponent implements OnInit {
     this.workDays.splice(index, 1);
   }
 
+  onPdfSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.selectedPdfFile = input.files && input.files.length ? input.files[0] : null;
+  }
+
   onSubmit(): void {
+    if (this.isSubmitting) {
+      return;
+    }
+
     this.facility.disciplines = this.disciplines;
     this.facility.workDays = this.workDays;
+    this.isSubmitting = true;
 
     this.facilityService.editFacility(this.facilityId, this.facility).subscribe(
       () => {
-        alert('Facility updated successfully');
-        this.router.navigate(['/facilities']);
+        if (!this.selectedPdfFile) {
+          this.isSubmitting = false;
+          alert('Facility updated successfully');
+          this.router.navigate(['/facilities']);
+          return;
+        }
+
+        this.facilityService.uploadFacilityPdf(this.facilityId, this.selectedPdfFile).subscribe(
+          () => {
+            this.isSubmitting = false;
+            alert('Facility and PDF updated successfully');
+            this.router.navigate(['/facilities']);
+          },
+          (pdfError) => {
+            this.isSubmitting = false;
+            console.error('Facility updated, but PDF upload failed', pdfError);
+            alert('Facility is updated, but PDF upload failed.');
+            this.router.navigate(['/facilities']);
+          }
+        );
       },
       (error) => {
+        this.isSubmitting = false;
         console.error('Error updating facility', error);
       }
     );

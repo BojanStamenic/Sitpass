@@ -30,6 +30,12 @@ export class FacilityService {
     });
   }
 
+  searchFacilities(query: string): Observable<Facility[]> {
+    return this.http.get<Facility[]>(`${this.apiUrl}/search?q=${encodeURIComponent(query)}`, {
+      headers: this.getAuthHeaders(),
+    });
+  }
+
   private getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('accessToken');
     return new HttpHeaders({
@@ -69,5 +75,24 @@ export class FacilityService {
         headers: this.getAuthHeaders(),
       }
     );
+  }
+
+  downloadFacilityPdf(facilityId: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${facilityId}/pdf`, {
+      headers: this.getAuthHeaders(),
+      responseType: 'blob',
+    });
+  }
+
+  uploadFacilityPdf(facilityId: number, file: File): Observable<Facility> {
+    const formData = new FormData();
+    formData.append('file', file);
+    const token = localStorage.getItem('accessToken');
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+    });
+    return this.http.post<Facility>(`${this.apiUrl}/${facilityId}/pdf`, formData, {
+      headers,
+    });
   }
 }

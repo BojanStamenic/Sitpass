@@ -26,6 +26,8 @@ public class Facility {
     private String city;
     private Double totalRating;
     private boolean active;
+    private String pdfObjectKey;
+    private String pdfFileName;
 
     @OneToMany(mappedBy = "facility", cascade = CascadeType.ALL, orphanRemoval = true)
 // Dodato da se izbegne ciklična referenca prilikom serializacije
@@ -103,6 +105,22 @@ public class Facility {
 
     public void setActive(boolean active) {
         this.active = active;
+    }
+
+    public String getPdfObjectKey() {
+        return pdfObjectKey;
+    }
+
+    public void setPdfObjectKey(String pdfObjectKey) {
+        this.pdfObjectKey = pdfObjectKey;
+    }
+
+    public String getPdfFileName() {
+        return pdfFileName;
+    }
+
+    public void setPdfFileName(String pdfFileName) {
+        this.pdfFileName = pdfFileName;
     }
 
     public List<Image> getImages() {

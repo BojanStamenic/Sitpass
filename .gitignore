@@ -1,0 +1,7 @@
+.m2/
+maven-settings.xml
+sitpass/backend-run.out.log
+sitpass/backend-run.err.log
+sitpass/backend-run*.log
+sitpass-frontend/frontend-run*.log
+tmp-download-*.pdf

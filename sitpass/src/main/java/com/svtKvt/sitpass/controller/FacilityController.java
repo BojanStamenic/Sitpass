@@ -2,32 +2,37 @@ package com.svtKvt.sitpass.controller;
 
 import com.svtKvt.sitpass.model.Discipline;
 import com.svtKvt.sitpass.model.Facility;
+import com.svtKvt.sitpass.model.Image;
 import com.svtKvt.sitpass.model.WorkDay;
-import com.svtKvt.sitpass.repository.DisciplineRepository;
-import com.svtKvt.sitpass.repository.WorkDayRepository;
 import com.svtKvt.sitpass.service.FacilityService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.svtKvt.sitpass.service.ObjectStorageService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/facilities")
-@RequiredArgsConstructor
 public class FacilityController {
 
-    @Autowired
-    private FacilityService facilityService;
+    private final FacilityService facilityService;
 
-    private final DisciplineRepository disciplineRepository;
+    public FacilityController(FacilityService facilityService) {
+        this.facilityService = facilityService;
+    }
 
-    private final WorkDayRepository workDayRepository;
     @GetMapping
     public List<Facility> getAllFacilities() {
         return facilityService.getAllFacilities();
+    }
+
+    @GetMapping("/search")
+    public List<Facility> searchFacilities(@RequestParam("q") String query) {
+        return facilityService.searchFacilities(query);
     }
 
     @GetMapping("/{id}")
@@ -39,59 +44,96 @@ public class FacilityController {
 
     @PostMapping
     public Facility createFacility(@RequestBody Facility facility) {
-        // Set facility reference for each discipline
         for (Discipline discipline : facility.getDisciplines()) {
             discipline.setFacility(facility);
         }
 
-        // Set facility reference for each work day
         for (WorkDay workDay : facility.getWorkDays()) {
             workDay.setFacility(facility);
         }
 
-        // Save facility along with disciplines and work days due to CascadeType.ALL
         return facilityService.saveFacility(facility);
     }
-
 
     @PutMapping("/{id}")
     public ResponseEntity<Facility> updateFacility(@PathVariable Long id, @RequestBody Facility facilityDetails) {
         Optional<Facility> facilityOptional = facilityService.getFacilityById(id);
 
-        if (facilityOptional.isPresent()) {
-            Facility existingFacility = facilityOptional.get();
-
-            // Ažuriranje osnovnih polja objekta Facility
-            existingFacility.setName(facilityDetails.getName());
-            existingFacility.setDescription(facilityDetails.getDescription());
-            existingFacility.setAddress(facilityDetails.getAddress());
-            existingFacility.setCity(facilityDetails.getCity());
-            existingFacility.setTotalRating(facilityDetails.getTotalRating());
-            existingFacility.setActive(facilityDetails.isActive());
-
-            // Ažuriranje Disciplines
-            existingFacility.getDisciplines().clear();
-            for (Discipline discipline : facilityDetails.getDisciplines()) {
-                discipline.setFacility(existingFacility); // Povezivanje discipline sa Facility
-                existingFacility.getDisciplines().add(discipline); // Dodavanje discipline
-            }
-
-            // Ažuriranje WorkDays
-            existingFacility.getWorkDays().clear();
-            for (WorkDay workDay : facilityDetails.getWorkDays()) {
-                workDay.setFacility(existingFacility); // Povezivanje workDay sa Facility
-                existingFacility.getWorkDays().add(workDay); // Dodavanje workDay
-            }
-
-            // Snimanje objekta Facility zajedno sa Disciplines i WorkDays zahvaljujući CascadeType.ALL
-            Facility updatedFacility = facilityService.saveFacility(existingFacility);
-
-            return ResponseEntity.ok(updatedFacility);
-        } else {
+        if (facilityOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
+        }
+
+        Facility existingFacility = facilityOptional.get();
+
+        existingFacility.setName(facilityDetails.getName());
+        existingFacility.setDescription(facilityDetails.getDescription());
+        existingFacility.setAddress(facilityDetails.getAddress());
+        existingFacility.setCity(facilityDetails.getCity());
+        existingFacility.setTotalRating(facilityDetails.getTotalRating());
+        existingFacility.setActive(facilityDetails.isActive());
+
+        existingFacility.getDisciplines().clear();
+        for (Discipline discipline : facilityDetails.getDisciplines()) {
+            discipline.setFacility(existingFacility);
+            existingFacility.getDisciplines().add(discipline);
+        }
+
+        existingFacility.getWorkDays().clear();
+        for (WorkDay workDay : facilityDetails.getWorkDays()) {
+            workDay.setFacility(existingFacility);
+            existingFacility.getWorkDays().add(workDay);
+        }
+
+        Facility updatedFacility = facilityService.saveFacility(existingFacility);
+        return ResponseEntity.ok(updatedFacility);
+    }
+
+    @PostMapping(value = "/{id}/pdf", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Facility> uploadFacilityPdf(
+            @PathVariable Long id,
+            @RequestPart("file") MultipartFile file
+    ) {
+        return ResponseEntity.ok(facilityService.uploadPdf(id, file));
+    }
+
+    @GetMapping("/{id}/pdf")
+    public ResponseEntity<byte[]> downloadFacilityPdf(@PathVariable Long id) {
+        ObjectStorageService.StoredObject pdf = facilityService.downloadPdf(id);
+        try (var input = pdf.stream()) {
+            byte[] content = input.readAllBytes();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"facility-" + id + ".pdf\"")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(content);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to read PDF stream.", e);
         }
     }
 
+    @PostMapping(value = "/{id}/images", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Image> uploadFacilityImage(
+            @PathVariable Long id,
+            @RequestPart("file") MultipartFile file
+    ) {
+        return ResponseEntity.ok(facilityService.uploadImage(id, file));
+    }
+
+    @GetMapping("/images/{imageId}")
+    public ResponseEntity<byte[]> downloadFacilityImage(@PathVariable Long imageId) {
+        ObjectStorageService.StoredObject image = facilityService.downloadImage(imageId);
+        try (var input = image.stream()) {
+            byte[] content = input.readAllBytes();
+            MediaType mediaType = MediaType.APPLICATION_OCTET_STREAM;
+            if (image.contentType() != null && !image.contentType().isBlank()) {
+                mediaType = MediaType.parseMediaType(image.contentType());
+            }
+            return ResponseEntity.ok()
+                    .contentType(mediaType)
+                    .body(content);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to read image stream.", e);
+        }
+    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteFacility(@PathVariable Long id) {
@@ -99,3 +141,4 @@ public class FacilityController {
         return ResponseEntity.noContent().build();
     }
 }
+

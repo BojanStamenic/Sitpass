@@ -5,58 +5,72 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterModule, CommonModule], // Uverite se da je CommonModule uključen
+  imports: [RouterModule, CommonModule],
   template: `
-    <nav class="flex items-center justify-between bg-gray-800 p-4 text-white">
-      <div class="flex space-x-4">
+    <header class="sticky top-0 z-50 border-b border-slate-800 bg-slate-900 text-slate-100 shadow-lg">
+      <div class="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-3">
         <a
-          routerLink="/register"
-          (click)="logNavigation('/register')"
-          class="hover:underline"
-          >Register</a
+          routerLink="/facilities"
+          class="text-xl font-semibold tracking-wide text-cyan-300"
+          >SitPass</a
         >
-        <a *ngIf="isLoggedIn" routerLink="/profile" class="hover:underline"
-          >Profile</a
-        >
-
-        <a *ngIf="isLoggedIn" routerLink="/facilities" class="hover:underline"
-          >Home</a
-        >
-        <a
-          *ngIf="!isLoggedIn"
-          routerLink="/login"
-          (click)="logNavigation('/login')"
-          class="hover:underline"
-          >Login</a
-        >
-        <a
-          *ngIf="isAdmin"
-          routerLink="/admin"
-          (click)="logNavigation('/admin')"
-          class="hover:underline"
-          >Admin</a
-        >
-
-        <a
-          *ngIf="isAdmin"
-          routerLink="/addFacility"
-          (click)="logNavigation('/addFacility')"
-          class="hover:underline"
-          >Add facility</a
-        >
+        <nav class="flex flex-wrap items-center gap-2 text-sm">
+          <a
+            *ngIf="isLoggedIn"
+            routerLink="/facilities"
+            routerLinkActive="bg-slate-700 text-white"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="rounded-md px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+            >Objekti</a
+          >
+          <a
+            *ngIf="isLoggedIn"
+            routerLink="/profile"
+            routerLinkActive="bg-slate-700 text-white"
+            class="rounded-md px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+            >Profil</a
+          >
+          <a
+            *ngIf="isAdmin"
+            routerLink="/admin"
+            routerLinkActive="bg-slate-700 text-white"
+            class="rounded-md px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+            >Admin</a
+          >
+          <a
+            *ngIf="isAdmin"
+            routerLink="/addFacility"
+            routerLinkActive="bg-slate-700 text-white"
+            class="rounded-md px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+            >Dodaj objekat</a
+          >
+          <a
+            *ngIf="!isLoggedIn"
+            routerLink="/register"
+            routerLinkActive="bg-slate-700 text-white"
+            class="rounded-md px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+            >Registracija</a
+          >
+          <a
+            *ngIf="!isLoggedIn"
+            routerLink="/login"
+            routerLinkActive="bg-slate-700 text-white"
+            class="rounded-md px-3 py-2 text-slate-300 transition hover:bg-slate-800 hover:text-white"
+            >Login</a
+          >
+          <button
+            *ngIf="isLoggedIn"
+            (click)="logout()"
+            class="ml-2 rounded-md bg-rose-600 px-3 py-2 font-medium text-white transition hover:bg-rose-500"
+          >
+            Logout
+          </button>
+        </nav>
       </div>
-
-      <div>
-        <button
-          *ngIf="isLoggedIn"
-          (click)="logout()"
-          class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Logout
-        </button>
-      </div>
-    </nav>
-    <router-outlet></router-outlet>
+    </header>
+    <main class="mx-auto w-full max-w-6xl p-4">
+      <router-outlet></router-outlet>
+    </main>
   `,
 })
 export class AppComponent implements OnInit {
@@ -69,30 +83,17 @@ export class AppComponent implements OnInit {
     if (typeof window !== 'undefined') {
       this.isLoggedIn = !!localStorage.getItem('accessToken');
       this.isAdmin = localStorage.getItem('role') === 'ROLE_ADMIN';
-      console.log(localStorage.getItem('role'));
-      console.log('Access Token:', localStorage.getItem('accessToken'));
-      console.log('Is Logged In:', this.isLoggedIn);
-      console.log('Is Admin:', this.isAdmin);
-      console.log(localStorage);
     }
   }
 
-  logNavigation(route: string) {
-    console.log('Navigacija na:', route);
-  }
-
   logout() {
-    // Ukloni sve podatke iz localStorage
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('role');
     localStorage.removeItem('userRole');
     localStorage.removeItem('userEmail');
 
-    // Ažuriraj stanje
     this.isLoggedIn = false;
     this.isAdmin = false;
-
-    // Preusmeri na login stranicu
     this.router.navigate(['/login']);
-    console.log('User logged out and local storage cleared.');
   }
 }

@@ -241,4 +241,24 @@ export class GymDetailComponent implements OnInit {
       }
     );
   }
+
+  getFacilityImageUrl(): string {
+    if (!this.facility) {
+      return 'https://picsum.photos/seed/sitpass-default/1200/500';
+    }
+
+    const images: any[] = (this.facility as any).images || [];
+    if (images.length > 0) {
+      const firstImage = images[0];
+      if (typeof firstImage === 'string' && firstImage.trim().length > 0) {
+        return firstImage;
+      }
+      if (firstImage?.id) {
+        return `http://localhost:8080/SitPass/api/facilities/images/${firstImage.id}`;
+      }
+    }
+
+    const seed = this.facility.id || 1;
+    return `https://picsum.photos/seed/sitpass-detail-${seed}/1200/500`;
+  }
 }

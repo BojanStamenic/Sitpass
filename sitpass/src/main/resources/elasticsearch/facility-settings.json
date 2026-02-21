@@ -1,0 +1,102 @@
+{
+  "analysis": {
+    "char_filter": {
+      "serbian_cyr_to_lat": {
+        "type": "mapping",
+        "mappings": [
+          "\\u0410=>A",
+          "\\u0411=>B",
+          "\\u0412=>V",
+          "\\u0413=>G",
+          "\\u0414=>D",
+          "\\u0402=>DJ",
+          "\\u0415=>E",
+          "\\u0416=>Z",
+          "\\u0417=>Z",
+          "\\u0418=>I",
+          "\\u0408=>J",
+          "\\u041A=>K",
+          "\\u041B=>L",
+          "\\u0409=>LJ",
+          "\\u041C=>M",
+          "\\u041D=>N",
+          "\\u040A=>NJ",
+          "\\u041E=>O",
+          "\\u041F=>P",
+          "\\u0420=>R",
+          "\\u0421=>S",
+          "\\u0422=>T",
+          "\\u040B=>C",
+          "\\u0423=>U",
+          "\\u0424=>F",
+          "\\u0425=>H",
+          "\\u0426=>C",
+          "\\u0427=>C",
+          "\\u040F=>DZ",
+          "\\u0428=>S",
+          "\\u0430=>a",
+          "\\u0431=>b",
+          "\\u0432=>v",
+          "\\u0433=>g",
+          "\\u0434=>d",
+          "\\u0452=>dj",
+          "\\u0435=>e",
+          "\\u0436=>z",
+          "\\u0437=>z",
+          "\\u0438=>i",
+          "\\u0458=>j",
+          "\\u043A=>k",
+          "\\u043B=>l",
+          "\\u0459=>lj",
+          "\\u043C=>m",
+          "\\u043D=>n",
+          "\\u045A=>nj",
+          "\\u043E=>o",
+          "\\u043F=>p",
+          "\\u0440=>r",
+          "\\u0441=>s",
+          "\\u0442=>t",
+          "\\u045B=>c",
+          "\\u0443=>u",
+          "\\u0444=>f",
+          "\\u0445=>h",
+          "\\u0446=>c",
+          "\\u0447=>c",
+          "\\u045F=>dz",
+          "\\u0448=>s"
+        ]
+      }
+    },
+    "filter": {
+      "sr_ascii_folding": {
+        "type": "asciifolding",
+        "preserve_original": false
+      }
+    },
+    "analyzer": {
+      "serbian_custom": {
+        "type": "custom",
+        "char_filter": [
+          "serbian_cyr_to_lat"
+        ],
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase",
+          "sr_ascii_folding"
+        ]
+      },
+      "serbian_query": {
+        "type": "custom",
+        "char_filter": [
+          "serbian_cyr_to_lat"
+        ],
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase",
+          "sr_ascii_folding"
+        ]
+      }
+    }
+  }
+}
+
