@@ -1,5 +1,17 @@
 {
   "analysis": {
+    "normalizer": {
+      "lowercase_normalizer": {
+        "type": "custom",
+        "char_filter": [
+          "serbian_cyr_to_lat"
+        ],
+        "filter": [
+          "lowercase",
+          "sr_ascii_folding"
+        ]
+      }
+    },
     "char_filter": {
       "serbian_cyr_to_lat": {
         "type": "mapping",

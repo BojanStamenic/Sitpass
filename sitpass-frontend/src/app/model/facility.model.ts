@@ -15,4 +15,5 @@ export interface Facility {
   workDays: WorkDay[];
   pdfObjectKey?: string;
   pdfFileName?: string;
+  highlight?: string;
 }

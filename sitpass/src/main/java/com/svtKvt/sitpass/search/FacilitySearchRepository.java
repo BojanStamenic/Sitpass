@@ -9,9 +9,11 @@ public interface FacilitySearchRepository extends ElasticsearchRepository<Facili
 
     @Query("""
             {
-              "multi_match": {
+              "simple_query_string": {
                 "query": "?0",
-                "fields": ["name^3", "description^2", "pdfContent"]
+                "fields": ["name^3", "description^2", "pdfContent"],
+                "default_operator": "and",
+                "analyze_wildcard": true
               }
             }
             """)

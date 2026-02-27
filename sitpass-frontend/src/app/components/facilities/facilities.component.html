@@ -18,9 +18,28 @@
         type="text"
         [(ngModel)]="searchQuery"
         name="search"
-        placeholder="Naziv/opis/PDF..."
+        placeholder="Naziv, opis ili PDF (podrzava phrase, *, ~)"
         class="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
       />
+      <div class="grid grid-cols-2 gap-2">
+        <select
+          [(ngModel)]="filterCriteria.operator"
+          name="operator"
+          class="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+        >
+          <option value="AND">AND</option>
+          <option value="OR">OR</option>
+        </select>
+        <select
+          [(ngModel)]="filterCriteria.sortByName"
+          name="sortByName"
+          class="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+        >
+          <option value="">Sort po nazivu</option>
+          <option value="asc">Naziv A-Z</option>
+          <option value="desc">Naziv Z-A</option>
+        </select>
+      </div>
       <input
         type="text"
         [(ngModel)]="filterCriteria.city"
@@ -48,6 +67,51 @@
           [(ngModel)]="filterCriteria.maxRating"
           name="maxRating"
           placeholder="Max ocena"
+          class="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+        />
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <input
+          type="number"
+          [(ngModel)]="filterCriteria.minReviews"
+          name="minReviews"
+          placeholder="Min review-a"
+          class="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+        />
+        <input
+          type="number"
+          [(ngModel)]="filterCriteria.maxReviews"
+          name="maxReviews"
+          placeholder="Max review-a"
+          class="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+        />
+      </div>
+      <div class="grid grid-cols-3 gap-2">
+        <select
+          [(ngModel)]="filterCriteria.ratingCategory"
+          name="ratingCategory"
+          class="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+        >
+          <option value="">Kategorija ocene</option>
+          <option value="EQUIPMENT">Equipment</option>
+          <option value="STAFF">Staff</option>
+          <option value="HYGIENE">Hygiene</option>
+          <option value="SPACE">Space</option>
+        </select>
+        <input
+          type="number"
+          step="0.1"
+          [(ngModel)]="filterCriteria.minCategoryRating"
+          name="minCategoryRating"
+          placeholder="Min kat."
+          class="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+        />
+        <input
+          type="number"
+          step="0.1"
+          [(ngModel)]="filterCriteria.maxCategoryRating"
+          name="maxCategoryRating"
+          placeholder="Max kat."
           class="rounded-md border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
         />
       </div>
@@ -107,6 +171,7 @@
             {{ facility.name }}
           </h2>
           <p class="line-clamp-2 text-sm text-slate-600">{{ facility.description }}</p>
+          <p *ngIf="facility.highlight" class="rounded bg-cyan-50 p-2 text-xs text-cyan-900" [innerHTML]="facility.highlight"></p>
           <p class="text-sm text-slate-600"><strong>Adresa:</strong> {{ facility.address }}</p>
           <p class="text-sm text-slate-600"><strong>Grad:</strong> {{ facility.city }}</p>
           <p class="text-sm text-slate-600"><strong>Ocena:</strong> {{ facility.totalRating }}</p>
@@ -117,6 +182,12 @@
             (click)="downloadPdf(facility)"
           >
             Download PDF
+          </button>
+          <button
+            class="mb-2 ml-2 rounded-md bg-emerald-600 px-3 py-2 text-sm text-white transition hover:bg-emerald-500"
+            (click)="loadMoreLikeThis(facility)"
+          >
+            More like this
           </button>
 
           <div>

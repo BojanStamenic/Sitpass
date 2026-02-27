@@ -45,6 +45,43 @@ services:
     volumes:
       - minio_data:/data
 
+  backend:
+    build:
+      context: ./sitpass
+      dockerfile: Dockerfile
+    container_name: sitpass-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_started
+      minio:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/sitpass?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: sitpass-assets
+      SERVER_PORT: 8080
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./sitpass-frontend
+      dockerfile: Dockerfile
+    container_name: sitpass-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "4200:4200"
+
 volumes:
   mysql_data:
   es_data:

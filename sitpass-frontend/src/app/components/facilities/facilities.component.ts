@@ -27,16 +27,30 @@ export class FacilitiesComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
   filterCriteria: {
+    operator: 'AND' | 'OR';
+    sortByName: '' | 'asc' | 'desc';
     city: string;
     discipline: string;
     minRating: number | null;
     maxRating: number | null;
+    minReviews: number | null;
+    maxReviews: number | null;
+    ratingCategory: '' | 'EQUIPMENT' | 'STAFF' | 'HYGIENE' | 'SPACE';
+    minCategoryRating: number | null;
+    maxCategoryRating: number | null;
     workDay: string;
   } = {
+    operator: 'AND',
+    sortByName: '',
     city: '',
     discipline: '',
     minRating: null,
     maxRating: null,
+    minReviews: null,
+    maxReviews: null,
+    ratingCategory: '',
+    minCategoryRating: null,
+    maxCategoryRating: null,
     workDay: '',
   };
 
@@ -71,14 +85,38 @@ export class FacilitiesComponent implements OnInit {
 
   onSearch(): void {
     const trimmedQuery = this.searchQuery.trim();
-    if (!trimmedQuery) {
+    const hasReviewRange =
+      this.filterCriteria.minReviews !== null ||
+      this.filterCriteria.maxReviews !== null;
+    const hasCategoryRange =
+      this.filterCriteria.minCategoryRating !== null ||
+      this.filterCriteria.maxCategoryRating !== null;
+
+    if (!trimmedQuery && !hasReviewRange && !hasCategoryRange) {
       this.filterFacilities();
       return;
     }
 
     this.errorMessage = '';
-    this.facilityService.searchFacilities(trimmedQuery).subscribe(
+    this.facilityService
+      .advancedSearchFacilities({
+        q: trimmedQuery,
+        minReviews: this.filterCriteria.minReviews,
+        maxReviews: this.filterCriteria.maxReviews,
+        ratingCategory: this.filterCriteria.ratingCategory,
+        minCategoryRating: this.filterCriteria.minCategoryRating,
+        maxCategoryRating: this.filterCriteria.maxCategoryRating,
+        operator: this.filterCriteria.operator,
+        sortByName: this.filterCriteria.sortByName,
+      })
+      .subscribe(
       (data) => {
+        const localCriteriaActive = this.hasLocalOnlyFilters();
+        if (this.filterCriteria.operator === 'OR' && localCriteriaActive) {
+          const localMatches = this.applyAdditionalFilters(this.facilities);
+          this.filteredFacilities = this.mergeById(data, localMatches);
+          return;
+        }
         this.filteredFacilities = this.applyAdditionalFilters(data);
       },
       (error) => {
@@ -137,16 +175,71 @@ export class FacilitiesComponent implements OnInit {
     return filtered;
   }
 
+  private hasLocalOnlyFilters(): boolean {
+    return Boolean(
+      this.filterCriteria.city.trim() ||
+      this.filterCriteria.discipline.trim() ||
+      this.filterCriteria.workDay ||
+      this.filterCriteria.minRating !== null ||
+      this.filterCriteria.maxRating !== null
+    );
+  }
+
+  private mergeById(primary: Facility[], secondary: Facility[]): Facility[] {
+    const merged: Facility[] = [];
+    const seen = new Set<number>();
+
+    for (const facility of primary) {
+      if (facility?.id && !seen.has(facility.id)) {
+        seen.add(facility.id);
+        merged.push(facility);
+      }
+    }
+
+    for (const facility of secondary) {
+      if (facility?.id && !seen.has(facility.id)) {
+        seen.add(facility.id);
+        merged.push(facility);
+      }
+    }
+
+    return merged;
+  }
+
   clearFilters(): void {
     this.searchQuery = '';
     this.filterCriteria = {
+      operator: 'AND',
+      sortByName: '',
       city: '',
       discipline: '',
       minRating: null,
       maxRating: null,
+      minReviews: null,
+      maxReviews: null,
+      ratingCategory: '',
+      minCategoryRating: null,
+      maxCategoryRating: null,
       workDay: '',
     };
     this.filteredFacilities = [...this.facilities];
+  }
+
+  loadMoreLikeThis(facility: Facility): void {
+    if (!facility?.id) {
+      return;
+    }
+
+    this.errorMessage = '';
+    this.facilityService.moreLikeThis(facility.id, this.filterCriteria.sortByName).subscribe(
+      (data) => {
+        this.filteredFacilities = this.applyAdditionalFilters(data);
+      },
+      (error) => {
+        console.error('Error loading more-like-this', error);
+        this.errorMessage = 'More like this pretraga trenutno nije dostupna.';
+      }
+    );
   }
 
   downloadPdf(facility: Facility): void {

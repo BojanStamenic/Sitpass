@@ -30,8 +30,68 @@ export class FacilityService {
     });
   }
 
-  searchFacilities(query: string): Observable<Facility[]> {
-    return this.http.get<Facility[]>(`${this.apiUrl}/search?q=${encodeURIComponent(query)}`, {
+  searchFacilities(
+    query: string,
+    minReviews?: number | null,
+    maxReviews?: number | null
+  ): Observable<Facility[]> {
+    const params: string[] = [`q=${encodeURIComponent(query || '')}`];
+    if (minReviews !== null && minReviews !== undefined) {
+      params.push(`minReviews=${encodeURIComponent(String(minReviews))}`);
+    }
+    if (maxReviews !== null && maxReviews !== undefined) {
+      params.push(`maxReviews=${encodeURIComponent(String(maxReviews))}`);
+    }
+
+    return this.http.get<Facility[]>(`${this.apiUrl}/search?${params.join('&')}`, {
+      headers: this.getAuthHeaders(),
+    });
+  }
+
+  advancedSearchFacilities(filters: {
+    q?: string;
+    nameQuery?: string;
+    descriptionQuery?: string;
+    pdfQuery?: string;
+    minReviews?: number | null;
+    maxReviews?: number | null;
+    ratingCategory?: string;
+    minCategoryRating?: number | null;
+    maxCategoryRating?: number | null;
+    operator?: 'AND' | 'OR';
+    sortByName?: 'asc' | 'desc' | '';
+  }): Observable<Facility[]> {
+    const params: string[] = [];
+
+    if (filters.q) params.push(`q=${encodeURIComponent(filters.q)}`);
+    if (filters.nameQuery) params.push(`nameQuery=${encodeURIComponent(filters.nameQuery)}`);
+    if (filters.descriptionQuery) params.push(`descriptionQuery=${encodeURIComponent(filters.descriptionQuery)}`);
+    if (filters.pdfQuery) params.push(`pdfQuery=${encodeURIComponent(filters.pdfQuery)}`);
+    if (filters.minReviews !== null && filters.minReviews !== undefined) {
+      params.push(`minReviews=${encodeURIComponent(String(filters.minReviews))}`);
+    }
+    if (filters.maxReviews !== null && filters.maxReviews !== undefined) {
+      params.push(`maxReviews=${encodeURIComponent(String(filters.maxReviews))}`);
+    }
+    if (filters.ratingCategory) params.push(`ratingCategory=${encodeURIComponent(filters.ratingCategory)}`);
+    if (filters.minCategoryRating !== null && filters.minCategoryRating !== undefined) {
+      params.push(`minCategoryRating=${encodeURIComponent(String(filters.minCategoryRating))}`);
+    }
+    if (filters.maxCategoryRating !== null && filters.maxCategoryRating !== undefined) {
+      params.push(`maxCategoryRating=${encodeURIComponent(String(filters.maxCategoryRating))}`);
+    }
+    if (filters.operator) params.push(`operator=${encodeURIComponent(filters.operator)}`);
+    if (filters.sortByName) params.push(`sortByName=${encodeURIComponent(filters.sortByName)}`);
+
+    const queryString = params.length ? `?${params.join('&')}` : '';
+    return this.http.get<Facility[]>(`${this.apiUrl}/search/advanced${queryString}`, {
+      headers: this.getAuthHeaders(),
+    });
+  }
+
+  moreLikeThis(facilityId: number, sortByName: 'asc' | 'desc' | '' = ''): Observable<Facility[]> {
+    const query = sortByName ? `?sortByName=${encodeURIComponent(sortByName)}` : '';
+    return this.http.get<Facility[]>(`${this.apiUrl}/search/more-like-this/${facilityId}${query}`, {
       headers: this.getAuthHeaders(),
     });
   }
